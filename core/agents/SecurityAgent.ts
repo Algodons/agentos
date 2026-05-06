@@ -14,7 +14,7 @@ export interface SecurityAgentOutput {
 }
 
 /**
- * SecurityAgent — sanitises prompts and detects injection / jailbreak attempts.
+ * SecurityAgent — sanitizes prompts and detects injection / jailbreak attempts.
  */
 export class SecurityAgent implements Agent<SecurityAgentInput, SecurityAgentOutput> {
   readonly name = 'SecurityAgent';

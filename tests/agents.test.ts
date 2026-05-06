@@ -20,7 +20,7 @@ describe('InputAgent', () => {
     await expect(agent.execute({ raw: '' })).rejects.toThrow();
   });
 
-  it('truncates input exceeding 10 000 chars', async () => {
+  it('truncates input exceeding 10_000 chars', async () => {
     const longInput = 'a'.repeat(15_000);
     const result = await agent.execute({ raw: longInput });
     expect(result.sanitizedInput.length).toBe(10_000);

@@ -15,7 +15,7 @@ export interface InputAgentOutput {
 }
 
 /**
- * InputAgent — validates and normalises raw user input before processing.
+ * InputAgent — validates and normalizes raw user input before processing.
  */
 export class InputAgent implements Agent<InputAgentInput, InputAgentOutput> {
   readonly name = 'InputAgent';

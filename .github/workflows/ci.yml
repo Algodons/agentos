@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Type-check, Lint & Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -37,6 +42,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout

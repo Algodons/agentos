@@ -52,7 +52,7 @@ describe('ScoringEngine', () => {
     expect(highScore).toBeGreaterThan(lowScore);
   });
 
-  it('penalises high latency', () => {
+  it('penalizes high latency', () => {
     const base = {
       prompt: 'Test',
       response: 'Test response with enough words to get a decent completeness score here.',
@@ -65,7 +65,7 @@ describe('ScoringEngine', () => {
     expect(fastScore).toBeGreaterThan(slowScore);
   });
 
-  it('penalises high cost', () => {
+  it('penalizes high cost', () => {
     const base = {
       prompt: 'Test',
       response: 'Test response with enough words to get a decent completeness score here.',

@@ -32,6 +32,13 @@ export class ScoringEngine {
     latency: 0.10,
   } as const;
 
+  constructor() {
+    const sum = Object.values(this.weights).reduce((a, b) => a + b, 0);
+    if (Math.abs(sum - 1.0) > 1e-9) {
+      throw new Error(`ScoringEngine: weights must sum to 1.0, got ${sum}`);
+    }
+  }
+
   score(input: ScoringInput): { score: number; breakdown: ScoreBreakdown } {
     const accuracy = this.scoreAccuracy(input.prompt, input.response);
     const completeness = this.scoreCompleteness(input.response);
@@ -95,13 +102,13 @@ export class ScoringEngine {
     return Math.max(0, 1 - penalty);
   }
 
-  /** Lower cost → higher score. Normalised against a $0.01 ceiling. */
+  /** Penalizes high cost. Normalizes against a $0.01 ceiling. */
   private scoreCost(estimatedCostUsd: number): number {
     const maxCost = 0.01;
     return Math.max(0, 1 - estimatedCostUsd / maxCost);
   }
 
-  /** Lower latency → higher score. Normalised against a 5 000 ms ceiling. */
+  /** Penalizes high latency. Normalizes against a 5 000 ms ceiling. */
   private scoreLatency(latencyMs: number): number {
     const maxLatencyMs = 5_000;
     return Math.max(0, 1 - latencyMs / maxLatencyMs);

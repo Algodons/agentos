@@ -16,7 +16,7 @@ export interface ModelResponse {
 
 /**
  * ModelRouter — routes prompt execution to the appropriate AI provider.
- * Normalises responses, retries with fallback providers, and tracks cost + latency.
+ * Normalizes responses, retries with fallback providers, and tracks cost + latency.
  */
 export class ModelRouter {
   private readonly fallbackOrder: ModelProvider[] = ['openai', 'claude', 'gemini', 'llama', 'mock'];

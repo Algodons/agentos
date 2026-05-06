@@ -2,12 +2,13 @@ import { WasmRunner, WasmTask, WasmTaskResult } from './wasmRunner';
 
 /**
  * WorkerPool — manages a pool of WasmRunner instances for parallel task execution.
- * Implements a task queue with configurable concurrency.
+ * Implements a task queue with configurable concurrency and round-robin distribution.
  */
 export class WorkerPool {
   private readonly runners: WasmRunner[];
   private readonly queue: Array<() => void> = [];
   private activeCount = 0;
+  private roundRobinIndex = 0;
 
   constructor(private readonly concurrency: number = 4) {
     this.runners = Array.from({ length: concurrency }, () => new WasmRunner());
@@ -20,7 +21,9 @@ export class WorkerPool {
     return new Promise((resolve) => {
       const run = () => {
         this.activeCount++;
-        const runner = this.runners[this.activeCount % this.runners.length];
+        const runnerIndex = this.roundRobinIndex % this.runners.length;
+        this.roundRobinIndex++;
+        const runner = this.runners[runnerIndex];
         runner.run(task).then((result) => {
           resolve(result);
           this.activeCount--;
