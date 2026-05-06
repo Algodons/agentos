@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SwarmOrchestrator } from '@/core/swarm/SwarmOrchestrator';
+import type { ScoreBreakdown } from '@/core/evaluation/ScoringEngine';
+import type { AgentLog } from '@/core/agents/types';
 
 interface OptimizeRequestBody {
   input: string;
@@ -12,8 +14,9 @@ interface OptimizeResponse {
   model: string;
   versionId: string;
   iterations: number;
-  scoreBreakdown: Record<string, number>;
+  scoreBreakdown: ScoreBreakdown;
   threatDetected: boolean;
+  logs: AgentLog[];
 }
 
 /**
@@ -25,7 +28,7 @@ interface OptimizeResponse {
  *   { input: string, model?: string }
  *
  * Response:
- *   { optimizedPrompt, score, model, versionId, iterations, scoreBreakdown, threatDetected }
+ *   { optimizedPrompt, score, model, versionId, iterations, scoreBreakdown, threatDetected, logs }
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   let body: OptimizeRequestBody;
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       iterations: result.iterations,
       scoreBreakdown: result.scoreBreakdown,
       threatDetected: result.threatDetected,
+      logs: result.logs,
     };
 
     return NextResponse.json(response, { status: 200 });

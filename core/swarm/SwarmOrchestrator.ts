@@ -7,6 +7,7 @@ import { OptimizationAgent } from '../agents/OptimizationAgent';
 import { DeploymentAgent } from '../agents/DeploymentAgent';
 import { AgentLog } from '../agents/types';
 import { MemorySystem } from '../memory/MemorySystem';
+import { ScoreBreakdown } from '../evaluation/ScoringEngine';
 
 export interface SwarmInput {
   raw: string;
@@ -21,7 +22,7 @@ export interface SwarmResult {
   iterations: number;
   versionId: string;
   threatDetected: boolean;
-  scoreBreakdown: Record<string, number>;
+  scoreBreakdown: ScoreBreakdown;
   logs: AgentLog[];
 }
 
@@ -67,7 +68,14 @@ export class SwarmOrchestrator {
     let response = '';
     let model = input.model ?? 'mock';
     let iterations = 0;
-    let scoreBreakdown: Record<string, number> = {};
+    let scoreBreakdown: ScoreBreakdown = {
+      accuracy: 0,
+      completeness: 0,
+      determinism: 0,
+      cost: 0,
+      latency: 0,
+      total: 0,
+    };
 
     // ── Stage 4–6: Execute → Evaluate → Optimise loop ─────────────────────────
     while (iterations < MAX_ITERATIONS && score < SCORE_THRESHOLD) {
@@ -89,7 +97,7 @@ export class SwarmOrchestrator {
       });
       allLogs.push(...evaluationResult.logs);
       score = evaluationResult.score;
-      scoreBreakdown = evaluationResult.breakdown as unknown as Record<string, number>;
+      scoreBreakdown = evaluationResult.breakdown;
 
       iterations++;
 
