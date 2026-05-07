@@ -63,4 +63,19 @@ describe('WorkerPool load and scaling', () => {
       'WorkerPool: concurrency must be a positive integer',
     );
   });
+
+  it('rejects invalid maxQueueSize configuration', () => {
+    expect(() => new WorkerPool({ concurrency: 2, maxQueueSize: -1 })).toThrow(
+      'WorkerPool: maxQueueSize must be a non-negative safe integer',
+    );
+    expect(() => new WorkerPool({ concurrency: 2, maxQueueSize: NaN })).toThrow(
+      'WorkerPool: maxQueueSize must be a non-negative safe integer',
+    );
+    expect(() => new WorkerPool({ concurrency: 2, maxQueueSize: Infinity })).toThrow(
+      'WorkerPool: maxQueueSize must be a non-negative safe integer',
+    );
+    expect(() => new WorkerPool({ concurrency: 2, maxQueueSize: 1.5 })).toThrow(
+      'WorkerPool: maxQueueSize must be a non-negative safe integer',
+    );
+  });
 });

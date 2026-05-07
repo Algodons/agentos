@@ -14,15 +14,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package*.json ./
+COPY --chown=node:node package*.json ./
+USER node
 RUN npm ci --omit=dev
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.mjs ./next.config.mjs
-
-RUN chown -R node:node /app
-USER node
+COPY --chown=node:node --from=builder /app/.next ./.next
+COPY --chown=node:node --from=builder /app/public ./public
+COPY --chown=node:node --from=builder /app/next.config.mjs ./next.config.mjs
 
 EXPOSE 3000
 CMD ["npm", "run", "start"]
