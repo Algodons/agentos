@@ -22,7 +22,7 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard) to see t
 
 AgentOS is an autonomous prompt optimization operating system — a self-evolving AI execution layer that:
 
-- �� **Optimizes prompts** through a 7-agent swarm pipeline
+- 🤖 **Optimizes prompts** through a 7-agent swarm pipeline
 - ⚡ **Executes across multiple AI models** (OpenAI, Claude, Gemini, Llama)
 - 📊 **Scores and selects** the best outputs via weighted evaluation
 - 🔁 **Evolves prompts** via feedback loops (up to 10 iterations)

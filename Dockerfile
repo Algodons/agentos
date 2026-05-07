@@ -21,5 +21,8 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/next.config.mjs ./next.config.mjs
 
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3000
 CMD ["npm", "run", "start"]
