@@ -10,12 +10,13 @@ COPY . .
 RUN npm run build
 
 FROM node:20-bookworm-slim AS runner
-WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY --chown=node:node package*.json ./
 USER node
+WORKDIR /app
+
+COPY --chown=node:node package*.json ./
 RUN npm ci --omit=dev
 
 COPY --chown=node:node --from=builder /app/.next ./.next
