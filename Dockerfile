@@ -10,16 +10,18 @@ COPY . .
 RUN npm run build
 
 FROM node:20-bookworm-slim AS runner
-WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-COPY package*.json ./
+USER node
+WORKDIR /app
+
+COPY --chown=node:node package*.json ./
 RUN npm ci --omit=dev
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.mjs ./next.config.mjs
+COPY --chown=node:node --from=builder /app/.next ./.next
+COPY --chown=node:node --from=builder /app/public ./public
+COPY --chown=node:node --from=builder /app/next.config.mjs ./next.config.mjs
 
 EXPOSE 3000
 CMD ["npm", "run", "start"]

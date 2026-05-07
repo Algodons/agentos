@@ -28,8 +28,22 @@ export class WasmRunner {
 
   constructor(options: WasmRunnerOptions = {}) {
     this.now = options.now ?? Date.now;
-    this.defaultTimeoutMs = options.defaultTimeoutMs ?? 10_000;
-    this.maxTimeoutMs = options.maxTimeoutMs ?? 60_000;
+
+    const defaultTimeoutMs = options.defaultTimeoutMs ?? 10_000;
+    const maxTimeoutMs = options.maxTimeoutMs ?? 60_000;
+
+    if (!Number.isFinite(defaultTimeoutMs) || defaultTimeoutMs <= 0) {
+      throw new Error('WasmRunner: defaultTimeoutMs must be a positive finite number');
+    }
+    if (!Number.isFinite(maxTimeoutMs) || maxTimeoutMs <= 0) {
+      throw new Error('WasmRunner: maxTimeoutMs must be a positive finite number');
+    }
+    if (maxTimeoutMs < defaultTimeoutMs) {
+      throw new Error('WasmRunner: maxTimeoutMs must be >= defaultTimeoutMs');
+    }
+
+    this.defaultTimeoutMs = defaultTimeoutMs;
+    this.maxTimeoutMs = maxTimeoutMs;
   }
 
   /**

@@ -25,7 +25,12 @@ export class WorkerPool {
     }
 
     this.concurrency = concurrency;
-    this.maxQueueSize = normalized.maxQueueSize ?? concurrency * 100;
+
+    const rawMaxQueueSize = normalized.maxQueueSize ?? concurrency * 100;
+    if (!Number.isSafeInteger(rawMaxQueueSize) || rawMaxQueueSize < 0) {
+      throw new Error('WorkerPool: maxQueueSize must be a non-negative safe integer');
+    }
+    this.maxQueueSize = rawMaxQueueSize;
     this.runners = Array.from({ length: concurrency }, () => new WasmRunner());
   }
 

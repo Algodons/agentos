@@ -61,3 +61,38 @@ describe('WasmRunner determinism', () => {
     expect(result.error).toContain('timed out after 40ms');
   });
 });
+
+describe('WasmRunner constructor validation', () => {
+  it('rejects non-positive or non-finite defaultTimeoutMs', () => {
+    expect(() => new WasmRunner({ defaultTimeoutMs: 0 })).toThrow(
+      'WasmRunner: defaultTimeoutMs must be a positive finite number',
+    );
+    expect(() => new WasmRunner({ defaultTimeoutMs: -1 })).toThrow(
+      'WasmRunner: defaultTimeoutMs must be a positive finite number',
+    );
+    expect(() => new WasmRunner({ defaultTimeoutMs: Infinity })).toThrow(
+      'WasmRunner: defaultTimeoutMs must be a positive finite number',
+    );
+    expect(() => new WasmRunner({ defaultTimeoutMs: NaN })).toThrow(
+      'WasmRunner: defaultTimeoutMs must be a positive finite number',
+    );
+  });
+
+  it('rejects non-positive or non-finite maxTimeoutMs', () => {
+    expect(() => new WasmRunner({ maxTimeoutMs: 0 })).toThrow(
+      'WasmRunner: maxTimeoutMs must be a positive finite number',
+    );
+    expect(() => new WasmRunner({ maxTimeoutMs: -1 })).toThrow(
+      'WasmRunner: maxTimeoutMs must be a positive finite number',
+    );
+    expect(() => new WasmRunner({ maxTimeoutMs: Infinity })).toThrow(
+      'WasmRunner: maxTimeoutMs must be a positive finite number',
+    );
+  });
+
+  it('rejects maxTimeoutMs less than defaultTimeoutMs', () => {
+    expect(() => new WasmRunner({ defaultTimeoutMs: 5_000, maxTimeoutMs: 1_000 })).toThrow(
+      'WasmRunner: maxTimeoutMs must be >= defaultTimeoutMs',
+    );
+  });
+});
