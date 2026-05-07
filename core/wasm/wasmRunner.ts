@@ -39,11 +39,17 @@ export class WasmRunner {
     const start = this.now();
     const timeoutMs = this.resolveTimeout(task.timeoutMs);
 
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
-      const result = await Promise.race([
-        task.execute(task.payload),
-        this.timeout<R>(timeoutMs, task.id),
-      ]);
+      const timeoutPromise = new Promise<R>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error(`WasmRunner: task ${task.id} timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      });
+
+      const result = await Promise.race([task.execute(task.payload), timeoutPromise]);
       return { id: task.id, result, durationMs: this.now() - start };
     } catch (err) {
       return {
@@ -51,6 +57,10 @@ export class WasmRunner {
         error: err instanceof Error ? err.message : String(err),
         durationMs: this.now() - start,
       };
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
   }
 
@@ -66,11 +76,5 @@ export class WasmRunner {
       return this.defaultTimeoutMs;
     }
     return Math.min(taskTimeoutMs, this.maxTimeoutMs);
-  }
-
-  private timeout<R>(ms: number, taskId: string): Promise<R> {
-    return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`WasmRunner: task ${taskId} timed out after ${ms}ms`)), ms),
-    );
   }
 }

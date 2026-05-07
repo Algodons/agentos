@@ -46,15 +46,16 @@ describe('WorkerPool load and scaling', () => {
       execute: async () => 'second',
     });
 
-    const third = pool.submit({
-      id: 'third',
-      payload: null,
-      execute: async () => 'third',
-    });
+    await expect(
+      pool.submit({
+        id: 'third',
+        payload: null,
+        execute: async () => 'third',
+      }),
+    ).rejects.toThrow('queue capacity 1 exceeded');
 
     await expect(first).resolves.toHaveProperty('id', 'first');
     await expect(second).resolves.toHaveProperty('id', 'second');
-    await expect(third).rejects.toThrow('queue capacity 1 exceeded');
   });
 
   it('rejects invalid concurrency configuration', () => {
