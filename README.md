@@ -3,6 +3,7 @@
 > **A production-grade WASM-powered multi-agent system that optimizes prompts autonomously, executes across multiple AI models, scores best outputs, and evolves via feedback loops.**
 
 [![CI](https://github.com/Algodons/agentos/actions/workflows/ci.yml/badge.svg)](https://github.com/Algodons/agentos/actions/workflows/ci.yml)
+[![Security](https://github.com/Algodons/agentos/actions/workflows/security.yml/badge.svg)](https://github.com/Algodons/agentos/actions/workflows/security.yml)
 
 ---
 
@@ -21,7 +22,7 @@ Open [http://localhost:3000/dashboard](http://localhost:3000/dashboard) to see t
 
 AgentOS is an autonomous prompt optimization operating system — a self-evolving AI execution layer that:
 
-- 🤖 **Optimizes prompts** through a 7-agent swarm pipeline
+- �� **Optimizes prompts** through a 7-agent swarm pipeline
 - ⚡ **Executes across multiple AI models** (OpenAI, Claude, Gemini, Llama)
 - 📊 **Scores and selects** the best outputs via weighted evaluation
 - 🔁 **Evolves prompts** via feedback loops (up to 10 iterations)
@@ -29,7 +30,7 @@ AgentOS is an autonomous prompt optimization operating system — a self-evolvin
 - 🧠 **Stores and versions** high-performing prompts
 - 🌐 **WASM execution layer** for parallel, deterministic agent tasks
 
-> **Backward compatibility:** `import { PromptOS } from '@/core'` still works — `PromptOS` is aliased to `AgentOS`.
+> **Backward compatibility:** `import { PromptOS } from '@/core'` still works — `PromptOS` is aliased to `SwarmOrchestrator`.
 
 ---
 
@@ -38,13 +39,6 @@ AgentOS is an autonomous prompt optimization operating system — a self-evolvin
 ```
 /core
 ├── agents/          # 7 stateless typed agents
-│   ├── InputAgent
-│   ├── PromptArchitect
-│   ├── ExecutionAgent
-│   ├── EvaluationAgent
-│   ├── OptimizationAgent
-│   ├── SecurityAgent
-│   └── DeploymentAgent
 ├── swarm/           # SwarmOrchestrator — pipeline coordinator
 ├── wasm/            # WasmRunner + WorkerPool
 ├── models/          # ModelRouter (OpenAI / Claude / Gemini / Llama)
@@ -69,39 +63,80 @@ score = (accuracy × 0.40) + (completeness × 0.25) + (determinism × 0.15)
 
 ---
 
-## 🌐 API
+## 🧪 Testing
 
-### `POST /api/optimize`
-
-**Request:**
-```json
-{ "input": "Summarize the history of the internet." }
+```bash
+npm test               # run all tests
+npm run test:coverage  # with coverage report
 ```
 
-**Response:**
-```json
-{
-  "optimizedPrompt": "...",
-  "score": 0.91,
-  "model": "mock",
-  "versionId": "uuid",
-  "iterations": 3,
-  "scoreBreakdown": { "accuracy": 0.85, "completeness": 1.0 },
-  "threatDetected": false
-}
-```
+Coverage now includes:
+
+- Unit tests for all swarm agents
+- End-to-end swarm orchestration tests
+- Determinism tests for WASM execution
+- Worker-pool load and queue saturation tests
 
 ---
 
-## 🎨 Dashboard
+## 🔐 Enterprise CI/CD and Security
 
-Route: `/dashboard`
+### CI/CD Workflows
 
-- **Score Index** — real-time score with sparkline
-- **Agent Swarm Panel** — live agent status (idle / running / failed)
-- **Prompt Timeline** — version history with scores
-- **Model Comparison** — GPT vs Claude vs Gemini vs Llama
-- **Live Logs** — terminal-style streaming log view
+- **CI (`.github/workflows/ci.yml`)**
+  - Deterministic `npm ci`
+  - Node.js matrix validation (20, 22)
+  - Type-check, lint, tests, build
+  - Coverage artifact upload
+- **Release (`.github/workflows/release.yml`)**
+  - Triggered by semantic tags (`v*.*.*`)
+  - Full pre-release validation
+  - Reproducible package artifact + checksums
+  - Automated GitHub release creation
+- **Deploy (`.github/workflows/deploy.yml`)**
+  - Human-triggered deployment path
+  - Staging then production gating via environments
+
+### Security Governance
+
+- **Security workflow (`.github/workflows/security.yml`)**
+  - CodeQL analysis
+  - Dependency review for pull requests
+  - Scheduled and branch-based `npm audit`
+- Prompt injection and XSS sanitization built into core runtime
+- No embedded secrets in codebase
+
+---
+
+## 🚢 Deployment Playbooks
+
+- Docker: [`docs/deployment/docker.md`](docs/deployment/docker.md)
+- Kubernetes: [`docs/deployment/kubernetes.md`](docs/deployment/kubernetes.md)
+- Vercel: [`docs/deployment/vercel.md`](docs/deployment/vercel.md)
+
+Kubernetes base manifests are provided in `deploy/k8s/base/` with secure defaults:
+
+- Non-root execution
+- Read-only root filesystem
+- Capability drop (`ALL`)
+- Liveness/readiness probes
+- HorizontalPodAutoscaler
+
+---
+
+## 📈 Observability, Scaling, and Recovery
+
+- Monitoring and alerting: [`docs/operations/monitoring-alerting.md`](docs/operations/monitoring-alerting.md)
+- Scaling strategy: [`docs/operations/scaling-playbook.md`](docs/operations/scaling-playbook.md)
+- Disaster recovery: [`docs/operations/disaster-recovery.md`](docs/operations/disaster-recovery.md)
+
+`GET /api/status` now returns health and operational metadata:
+
+- status
+- timestamp
+- uptime
+- model and score snapshot
+- version count
 
 ---
 
@@ -117,29 +152,7 @@ LLAMA_API_KEY=
 MARKETPLACE_ENABLED=true
 ```
 
-The system works **without any API keys** — all models fall back to a deterministic mock provider.
-
----
-
-## 🧪 Testing
-
-```bash
-npm test              # run all tests
-npm run test:coverage # with coverage report
-```
-
-- `tests/swarm.test.ts` — end-to-end swarm pipeline
-- `tests/agents.test.ts` — unit tests for all 7 agents
-- `tests/scoring.test.ts` — scoring engine formula tests
-
----
-
-## 🛡️ Security
-
-- **PromptSanitizer** — strips jailbreak and injection patterns before execution
-- **InjectionDetector** — detects `instruction_override`, `jailbreak`, `xss_injection`, `code_injection`, `system_prompt_injection`
-- No secrets hardcoded anywhere
-- Server-side validation on all API inputs
+The system works **without any API keys** — models can run through deterministic mock behavior.
 
 ---
 
@@ -151,7 +164,8 @@ npm run test:coverage # with coverage report
 | `npm run build` | Production build |
 | `npm run type-check` | TypeScript strict check |
 | `npm run lint` | ESLint |
-| `npm test` | Jest tests |
+| `npm test` | Jest suite |
+| `npm run test:coverage` | Jest coverage |
 
 ---
 

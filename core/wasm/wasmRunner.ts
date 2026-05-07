@@ -12,46 +12,69 @@ export interface WasmTaskResult<R> {
   durationMs: number;
 }
 
+export interface WasmRunnerOptions {
+  now?: () => number;
+  defaultTimeoutMs?: number;
+  maxTimeoutMs?: number;
+}
+
 /**
- * WasmRunner — provides deterministic, parallel task execution via a simulated WASM sandbox.
- *
- * In production this would compile and run Wasm modules via the WebAssembly API.
- * The interface is kept identical so swapping in a real WASM engine requires no
- * changes to the surrounding code.
+ * WasmRunner — deterministic task execution wrapper for WASM-compatible workloads.
  */
 export class WasmRunner {
+  private readonly now: () => number;
+  private readonly defaultTimeoutMs: number;
+  private readonly maxTimeoutMs: number;
+
+  constructor(options: WasmRunnerOptions = {}) {
+    this.now = options.now ?? Date.now;
+    this.defaultTimeoutMs = options.defaultTimeoutMs ?? 10_000;
+    this.maxTimeoutMs = options.maxTimeoutMs ?? 60_000;
+  }
+
   /**
-   * Executes a single task with optional timeout.
+   * Executes a single task with validated timeout bounds.
    */
   async run<T, R>(task: WasmTask<T, R>): Promise<WasmTaskResult<R>> {
-    const start = Date.now();
-    const timeoutMs = task.timeoutMs ?? 10_000;
+    const start = this.now();
+    const timeoutMs = this.resolveTimeout(task.timeoutMs);
+
+    let timeoutId: NodeJS.Timeout | null = null;
 
     try {
-      const result = await Promise.race([
-        task.execute(task.payload),
-        this.timeout<R>(timeoutMs, task.id),
-      ]);
-      return { id: task.id, result, durationMs: Date.now() - start };
+      const timeoutPromise = new Promise<R>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error(`WasmRunner: task ${task.id} timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      });
+
+      const result = await Promise.race([task.execute(task.payload), timeoutPromise]);
+      return { id: task.id, result, durationMs: this.now() - start };
     } catch (err) {
       return {
         id: task.id,
         error: err instanceof Error ? err.message : String(err),
-        durationMs: Date.now() - start,
+        durationMs: this.now() - start,
       };
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     }
   }
 
   /**
-   * Executes multiple tasks in parallel.
+   * Executes multiple tasks in deterministic input order.
    */
   async runAll<T, R>(tasks: WasmTask<T, R>[]): Promise<WasmTaskResult<R>[]> {
     return Promise.all(tasks.map((task) => this.run(task)));
   }
 
-  private timeout<R>(ms: number, taskId: string): Promise<R> {
-    return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`WasmRunner: task ${taskId} timed out after ${ms}ms`)), ms),
-    );
+  private resolveTimeout(taskTimeoutMs?: number): number {
+    if (typeof taskTimeoutMs !== 'number' || !Number.isFinite(taskTimeoutMs) || taskTimeoutMs <= 0) {
+      return this.defaultTimeoutMs;
+    }
+    return Math.min(taskTimeoutMs, this.maxTimeoutMs);
   }
 }
