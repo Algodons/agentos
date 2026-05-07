@@ -22,7 +22,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: agentos
-          image: ghcr.io/algodons/agentos:latest
+          image: ghcr.io/algodons/agentos:v1.0.0-sha.ce63d69
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
